@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body style="margin:0; padding:0;">
+    <canvas id="game" style="position: fixed; width:100%; height: 100%;" />
+  </body>
+  <script type="module">
+    const canvasEl = document.getElementById('game');
+    canvasEl.setAttribute('width', window.innerWidth);
+    canvasEl.setAttribute('height', window.innerHeight);
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const ctx = canvasEl.getContext('2d');
+    
+    const cellSize = 40;
+
+    ctx.strokeStyle = 'black';
+    canvasEl.style.setProperty('left', `${(width % cellSize)/2}px`);
+    canvasEl.style.setProperty('top', `${(height % cellSize)/2}px`);
+
+    const state = Array.from({length: Math.floor(height / cellSize)})
+      .map(row => Array.from({length: Math.floor(width / cellSize)}).fill(false));
+
+    function randomizeState(density) {
+      forEachCell((i,j) => {
+        state[i][j] = Math.random() > density;
+      });
+    }
+
+    randomizeState(0.5);
+
+    function render() {
+      ctx.fillStyle = 'white';
+      ctx.clearRect(0,0, width, height);
+      forEachCell((col, row) => {
+          ctx.fillStyle = state[col][row] ? 'white' : 'black';
+          
+          ctx.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+          ctx.strokeRect(row * cellSize, col * cellSize, cellSize, cellSize); 
+      });
+    } 
+    
+    function forEachCell(cb) {
+      for (let col = 0; col < state.length; col++) { 
+        for (let row = 0; row < state[col].length; row++) {
+          cb(col, row, state[col][row]);
+        }
+      } 
+    }
+
+    function loop() {
+      randomizeState(0.5);
+      render();
+      setTimeout(loop, 500)
+    }
+
+    loop(); 
+  </script>
+</html>
