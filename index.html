@@ -2,21 +2,26 @@
 <html>
   <head></head>
   <body style="margin:0; padding:0;">
-    <canvas id="game" style="position: fixed; width:100%; height: 100%;" />
+    <div style="display: flex; position:fixed; height: 50; width: 100%;">
+      <button id="startButton">Start</button>
+      <button id="stopButton">Stop</button>
+    </div>
+    <canvas id="game" style="position: fixed;" />
   </body>
   <script type="module">
-    const canvasEl = document.getElementById('game');
-    canvasEl.setAttribute('width', window.innerWidth);
-    canvasEl.setAttribute('height', window.innerHeight);
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const ctx = canvasEl.getContext('2d');
-    
     const cellSize = 40;
 
-    ctx.strokeStyle = 'black';
-    canvasEl.style.setProperty('left', `${(width % cellSize)/2}px`);
-    canvasEl.style.setProperty('top', `${(height % cellSize)/2}px`);
+    const canvasEl = document.getElementById('game');
+    const width = window.innerWidth;
+    const height = window.innerHeight - 50;
+    canvasEl.setAttribute('width', width);
+    canvasEl.setAttribute('height', height);
+    const leftPadding = (width % cellSize)/2;
+    const topPadding = 50 + (height % cellSize)/2;
+    const ctx = canvasEl.getContext('2d'); 
+
+    canvasEl.style.setProperty('left', `${leftPadding}px`);
+    canvasEl.style.setProperty('top', `${topPadding}px`);
 
     const state = Array.from({length: Math.floor(height / cellSize)})
       .map(row => Array.from({length: Math.floor(width / cellSize)}).fill(false));
@@ -27,13 +32,12 @@
       });
     }
 
-    randomizeState(0.5);
-
     function render() {
       ctx.fillStyle = 'white';
       ctx.clearRect(0,0, width, height);
       forEachCell((col, row) => {
-          ctx.fillStyle = state[col][row] ? 'white' : 'black';
+          ctx.strokeStyle = 'black';
+          ctx.fillStyle = state[col][row] ? 'black' : 'white';
           
           ctx.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
           ctx.strokeRect(row * cellSize, col * cellSize, cellSize, cellSize); 
@@ -48,12 +52,38 @@
       } 
     }
 
+    let play = false;
     function loop() {
-      randomizeState(0.5);
-      render();
+      if (play) {
+        stepState();
+        render(); 
+      }
       setTimeout(loop, 500)
     }
 
+    document.getElementById('startButton').onclick = () => {
+      play = true; 
+    }
+    document.getElementById('stopButton').onclick = () => {
+      play = false; 
+    }
+    addEventListener('mousedown', e => {
+     const x = e.clientX;
+     const y = e.clientY;
+     const col = Math.floor((y - topPadding) / cellSize);
+     const row = Math.floor((x - leftPadding) / cellSize);
+     if (0 <= col && col < state.length && 0 <= row && row < state[col].length) {
+      state[col][row] = ! state[col][row];
+      render();
+     }
+    })
+
+    render();
     loop(); 
+
+    // TODO: implement
+    function stepState() {
+
+    }
   </script>
 </html>
