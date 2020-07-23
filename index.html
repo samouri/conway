@@ -2,9 +2,11 @@
 <html>
   <head></head>
   <body style="margin:0; padding:0;">
-    <div style="display: flex; position:fixed; height: 50; width: 100%;">
-      <button id="startButton">Start</button>
-      <button id="stopButton">Stop</button>
+    <div id="buttonbar" style="display: flex; position:fixed; height: 40px; width: 100%; margin-top: 10px;">
+      <button id="step">Step</button>
+      <button id="stopStart">Start</button>
+      <button id="clear">Clear</button>
+      <button id="randomize">Randomize</button>
     </div>
     <canvas id="game" style="position: fixed;" />
   </body>
@@ -22,8 +24,10 @@
 
     canvasEl.style.setProperty('left', `${leftPadding}px`);
     canvasEl.style.setProperty('top', `${topPadding}px`);
+    document.getElementById('buttonbar').style.setProperty('margin-left', `${leftPadding}px`);
+    document.getElementById('buttonbar').style.setProperty('margin-top', `${topPadding - 45}px`);
 
-    const state = Array.from({length: Math.floor(height / cellSize)})
+    let state = Array.from({length: Math.floor(height / cellSize)})
       .map(row => Array.from({length: Math.floor(width / cellSize)}).fill(false));
 
     function randomizeState(density) {
@@ -51,7 +55,7 @@
                                           [col - 1, row    ], /* col, row */  [col + 1, row    ],
                                           [col - 1, row + 1], [col, row + 1], [col + 1, row + 1]
                                       ].filter(isValid);
-      // Any live cell with two or three live neighbors survives. Any live cell with 4 or 1 neighbors dies.
+      // Any live cell with two or three live neighbors survives. Any other number results dies.
       const toKill = [];
       forEachCell((col, row, isAlive) => {
         if (!isAlive) {
@@ -59,8 +63,7 @@
         }
 
         let liveNeighborsCount = neighbors(col, row).filter(([col, row]) => state[col][row]).length;
-        if (liveNeighborsCount === 1 || liveNeighborsCount === 4) { 
-          console.log(isAlive, col, row);
+        if (liveNeighborsCount < 2 || liveNeighborsCount > 3) { 
           toKill.push([col, row]);
         }
       });
@@ -77,7 +80,6 @@
           toLife.push([col, row]);
         }
       });
-      console.log({toLife, toKill})
       for (let [col, row] of toKill) {
         state[col][row] = false
       }
@@ -103,12 +105,30 @@
       setTimeout(loop, 500)
     }
 
-    document.getElementById('startButton').onclick = () => {
-      play = true; 
+    document.getElementById('stopStart').onclick = () => {
+      if (play) {
+        play = false;
+        document.getElementById('stopStart').textContent = 'Start';
+      } else {
+        play = true;
+        document.getElementById('stopStart').textContent = 'Stop'; 
+      }
     }
-    document.getElementById('stopButton').onclick = () => {
-      play = false; 
+    document.getElementById('step').onclick = () => {
+      step()
+      render();
     }
+    document.getElementById('clear').onclick = () => {
+      let rows = Math.floor(height / cellSize);
+      let cols = Math.floor(width / cellSize);
+      state = Array.from({length: rows}).fill(Array.from({length: cols}).fill(false));
+      render();
+    }
+    document.getElementById('randomize').onclick = () => { 
+      randomizeState(Math.random());
+      render();
+    }
+
     addEventListener('mousedown', e => {
      const x = e.clientX;
      const y = e.clientY;
