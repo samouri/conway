@@ -43,6 +43,48 @@
           ctx.strokeRect(row * cellSize, col * cellSize, cellSize, cellSize); 
       });
     } 
+
+    function step() {
+      const isValid = ([col, row]) => 0 <= col && col <= state.length && 0 <= row && row <= state[col]?.length;
+      const neighbors = (col, row) => [
+                                          [col - 1, row - 1], [col, row -1],  [col + 1, row - 1],
+                                          [col - 1, row    ], /* col, row */  [col + 1, row    ],
+                                          [col - 1, row + 1], [col, row + 1], [col + 1, row + 1]
+                                      ].filter(isValid);
+      // Any live cell with two or three live neighbors survives. Any live cell with 4 or 1 neighbors dies.
+      const toKill = [];
+      forEachCell((col, row, isAlive) => {
+        if (!isAlive) {
+          return;
+        }
+
+        let liveNeighborsCount = neighbors(col, row).filter(([col, row]) => state[col][row]).length;
+        if (liveNeighborsCount === 1 || liveNeighborsCount === 4) { 
+          console.log(isAlive, col, row);
+          toKill.push([col, row]);
+        }
+      });
+
+      // 2. Any dead cell with three live neighbors becomes alive
+      let toLife = [];
+      forEachCell((col, row, isAlive) => {
+        if (isAlive) {
+          return
+        }
+
+        let liveNeighborsCount = neighbors(col, row).filter(([col, row]) => state[col][row]).length;
+        if (liveNeighborsCount === 3) {
+          toLife.push([col, row]);
+        }
+      });
+      console.log({toLife, toKill})
+      for (let [col, row] of toKill) {
+        state[col][row] = false
+      }
+      for (let [col, row] of toLife) {
+        state[col][row] = true
+      }
+    }
     
     function forEachCell(cb) {
       for (let col = 0; col < state.length; col++) { 
@@ -55,7 +97,7 @@
     let play = false;
     function loop() {
       if (play) {
-        stepState();
+        step();
         render(); 
       }
       setTimeout(loop, 500)
@@ -81,9 +123,5 @@
     render();
     loop(); 
 
-    // TODO: implement
-    function stepState() {
-
-    }
   </script>
 </html>
