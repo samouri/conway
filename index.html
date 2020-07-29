@@ -119,6 +119,11 @@
       render();
     }
     document.getElementById('clear').onclick = () => {
+      if(play) {
+        play = false;
+        document.getElementById('stopStart').textContent = 'Start'; 
+      }
+
       let rows = Math.floor(height / cellSize);
       let cols = Math.floor(width / cellSize);
       state = Array.from({length: rows}).fill(Array.from({length: cols}).fill(false));
