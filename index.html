@@ -124,9 +124,9 @@
         document.getElementById('stopStart').textContent = 'Start'; 
       }
 
-      let rows = Math.floor(height / cellSize);
-      let cols = Math.floor(width / cellSize);
-      state = Array.from({length: rows}).fill(Array.from({length: cols}).fill(false));
+      let cols = Math.floor(height / cellSize);
+      let rows = Math.floor(width / cellSize);
+      state = Array.from({length: cols}).map(row => Array.from({length: rows}).fill(false));
       render();
     }
     document.getElementById('randomize').onclick = () => { 
